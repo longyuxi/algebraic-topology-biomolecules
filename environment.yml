@@ -4,29 +4,9 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - ca-certificates=2022.9.24=h033912b_0
-  - certifi=2019.11.28=py27h8c360ce_1
-  - libblas=3.9.0=8_openblas
-  - libcblas=3.9.0=8_openblas
-  - libcxx=14.0.6=hccf4f1f_0
-  - libffi=3.2.1=hb1e8313_1007
-  - libgfortran=4.0.0=7_5_0_h1a10cd1_23
-  - libgfortran4=7.5.0=h1a10cd1_23
-  - liblapack=3.9.0=8_openblas
-  - libopenblas=0.3.12=openmp_h63d9170_1
-  - libsqlite=3.39.4=ha978bb4_0
-  - libzlib=1.2.12=hfd90126_3
-  - llvm-openmp=14.0.4=ha654fa7_0
-  - ncurses=6.3=h96cf925_1
-  - numpy=1.15.4=py27hbb3c62a_1002
-  - openssl=1.1.1q=hfe4f2af_0
-  - pip=20.1.1=pyh9f0ad1d_0
-  - python=2.7.15=h8e446fc_1011_cpython
-  - python_abi=2.7=1_cp27m
-  - readline=8.1.2=h3899abd_0
-  - scipy=1.2.1=py27h7e0e109_2
-  - setuptools=44.0.0=py27_0
-  - sqlite=3.39.4=h9ae0607_0
-  - tk=8.6.12=h5dbffcc_0
-  - wheel=0.37.1=pyhd8ed1ab_0
-  - zlib=1.2.12=hfd90126_3
+  - numpy
+  - pip
+  - python=2.7.15
+  - scipy
+  - setuptools
+prefix: ./algtop-environment
