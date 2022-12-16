@@ -19,9 +19,9 @@ import TopBio.PersistentHomology.PHComplex as PHComplex
 import TopBio.Feature.LigandFeature as LigandFeature
 import TopBio.Feature.ComplexFeature as ComplexFeature
 
-working_dir = '/Users/longyuxi/Downloads/pcbi.1005929.s002/1a8i/'
-ligand_name = '1a8i_ligand'
-protein_name = '1a8i_protein'
+working_dir = '/work/yl708/pdbbind/refined-set/4k7i/'
+ligand_name = '4k7i_ligand'
+protein_name = '4k7i_protein'
 
 a = ReadMOL2.SmallMolecule(ligand_name,working_dir)
 PHSmallMolecule.Level1_Rips(a, ligand_name, working_dir)

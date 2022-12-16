@@ -1,3 +1,5 @@
+"""Script for making persistence homology jobs and submitting them to SLURM Batch
+"""
 import pathlib
 import sys
 import os
@@ -14,12 +16,11 @@ for pdb_file in pdb_files:
     ligand_name = pdb_name + '_ligand'
 
     s = """#!/bin/bash
-#SBATCH --mail-type=END,FAIL          # Mail events (NONE, BEGIN, END, FAIL, ALL)
-#SBATCH --mail-user=yl708@duke.edu     # Where to send mail:
 #SBATCH --partition=scavenger
 #SBATCH --time='1:00:00'
-#SBATCH --exclusive
+#SBATCH --requeue
 #SBATCH --chdir='/work/yl708/algebraic-topology-biomolecules'
+#SBATCH --output=/work/yl708/algebraic-topology-biomolecules/slurm-outs/%x-%j-slurm.out
 #SBATCH --mem=4G
 
 source ~/.bashrc
@@ -27,6 +28,7 @@ source ~/.bash_profile
 date
 hostname
 conda activate /work/yl708/algebraic-topology-biomolecules/algtop-environment
+cd /work/yl708/algebraic-topology-biomolecules
 
 module load R/4.1.1-rhel8
 module load Matlab
@@ -41,5 +43,4 @@ module load Matlab
 
     os.system('sbatch ' + filename)
     os.system('rm ' + filename)
-    break
 
