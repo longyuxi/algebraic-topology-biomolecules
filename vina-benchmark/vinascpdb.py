@@ -2,10 +2,14 @@ import os
 from utils import calculate_bbox, calculate_rmsd
 import pybel
 import argparse
+import socket
 
 def run_on_folder(folder):
     os.chdir(folder)
-    adfr_root = '/home/longyuxi/ADFRsuite-1.0/bin'
+    if socket.gethostbyname() == '1080-ubuntu':
+        adfr_root = '/home/longyuxi/ADFRsuite-1.0/bin'
+    else:
+        adfr_root = '/hpc/home/yl708/ADFR/bin'
 
     # Prepare the receptor
     assert os.system(f'obabel protein.mol2 -O protein.pdb') == 0
