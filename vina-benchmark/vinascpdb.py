@@ -6,7 +6,7 @@ import socket
 
 def run_on_folder(folder):
     os.chdir(folder)
-    if socket.gethostbyname() == '1080-ubuntu':
+    if socket.gethostname() == '1080-ubuntu':
         adfr_root = '/home/longyuxi/ADFRsuite-1.0/bin'
     else:
         adfr_root = '/hpc/home/yl708/ADFR/bin'

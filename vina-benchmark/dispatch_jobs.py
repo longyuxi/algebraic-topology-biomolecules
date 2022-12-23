@@ -14,7 +14,7 @@ def main():
     if not os.path.exists(CSV_FILE):
         df = pd.DataFrame(columns=['name', 'folder', 'attempted', 'finished'])
 
-        if socket.gethostbyname() == '1080-ubuntu':
+        if socket.gethostname() == '1080-ubuntu':
             folders = glob.glob('/home/longyuxi/Documents/mount/scPDB/*')
         else:
             folders = glob.glob('/work/yl708/scPDB/*')
