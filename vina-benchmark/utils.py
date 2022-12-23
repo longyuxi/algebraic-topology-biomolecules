@@ -62,3 +62,44 @@ def calculate_rmsd(mol1: pybel.Molecule, mol2: pybel.Molecule):
     rmsd = np.sqrt(np.mean(np.array(atomwise_distances)))
 
     return rmsd
+
+def calculate_center_distance(mol1: pybel.Molecule, mol2: pybel.Molecule):
+    """Calculates distance between the average atom coordinates of two molecules without alignment
+
+    Parameters
+    ----------
+    mol1 : pybel.Molecule
+        molecule 1
+    mol2 : pybel.Molecule
+        molecule2
+
+    Returns
+    -------
+    float
+        RMSD
+    """
+    assert len(mol1.atoms) == len(mol2.atoms)
+
+    mol1_atom_coords = []
+    mol2_atom_coords = []
+
+    for idx in range(len(mol1.atoms)):
+        atom1 = mol1.atoms[idx]
+        atom2 = mol2.atoms[idx]
+        assert atom1.type == atom2.type
+
+        atom1_coords = np.array(atom1.coords)
+        atom2_coords = np.array(atom2.coords)
+
+        mol1_atom_coords.append(atom1_coords)
+        mol2_atom_coords.append(atom2_coords)
+
+    mol1_atom_coords = np.array(mol1_atom_coords)
+    mol2_atom_coords = np.array(mol2_atom_coords)
+
+    mol1_center = np.mean(mol1_atom_coords)
+    mol2_center = np.mean(mol2_atom_coords)
+
+    dist = np.linalg.norm(mol1_center - mol2_center)
+    return dist
+
