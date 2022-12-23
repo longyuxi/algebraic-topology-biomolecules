@@ -8,14 +8,15 @@ import socket
 
 cwd = pathlib.Path(__file__).parent.resolve()
 CSV_FILE = f'{cwd}/jobs.csv'
-NUM_FOLDERS_TO_RUN = 3
+NUM_FOLDERS_TO_RUN = 500
+PYTHON_EXECUTABLE = '/work/yl708/bass/cycada/.conda/vina/bin/python'
 SBATCH_TEMPLATE = f"""#!/bin/bash
-#SBATCH --mail-type=END,FAIL          # Mail events (NONE, BEGIN, END, FAIL, ALL)
-#SBATCH --mail-user=yl708@duke.edu     # Where to send mail
 #SBATCH --partition=scavenger
-#SBATCH --exclusive
-#SBATCH --time='7-0'
+#SBATCH --ntasks 1
+#SBATCH --cpus-per-task 8
+#SBATCH --time='1-0'
 #SBATCH --chdir='/work/yl708/algebraic-topology-biomolecules/vina-benchmark'
+#SBATCH --output=/work/yl708/algebraic-topology-biomolecules/vina-benchmark/slurm-outs/%x-%j-slurm.out
 #SBATCH --mem=4g
 
 source ~/.bashrc
@@ -46,13 +47,20 @@ def main():
         if len(valid_entries) == 0:
             break
 
-        idx = random.choice(valid_entries.index)
+        idx = np.random.choice(valid_entries.index)
         df.at[idx, 'attempted'] = True
-        df.to_csv(CSV_FILE)
+        df.to_csv(CSV_FILE, index=False)
 
         # sbatch run job wrapper
-        sbatch_cmd = SBATCH_TEMPLATE + f'\npython {pathlib.Path(__file__).parent + "dispatch_jobs.py"}'
-        print(sbatch_cmd)
+        sbatch_cmd = SBATCH_TEMPLATE + f'\n{PYTHON_EXECUTABLE} {str(pathlib.Path(__file__).parent) + "/job_wrapper.py"} --csv {CSV_FILE} --idx {idx}'
+
+        # print(sbatch_cmd)
+        with open('run.sh', 'w') as f:
+            f.write(sbatch_cmd)
+
+        os.system(f'sbatch --job-name={idx} run.sh')
+        os.system('rm run.sh')
+
 
 def get_df(csv_file) -> pd.DataFrame:
     if not os.path.exists(csv_file):
@@ -70,9 +78,11 @@ def get_df(csv_file) -> pd.DataFrame:
         df['finished'] = False
         df['error'] = False
 
-        df.to_csv(csv_file)
+        df.to_csv(csv_file, index=False)
     else:
         df = pd.read_csv(csv_file)
+
+    return df
 
 if __name__ == '__main__':
     main()

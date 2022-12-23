@@ -3,3 +3,5 @@ __pycache__
 scpdb-example
 vina-example-outputs
 vina-playground
+slurm-outs
+jobs.csv
