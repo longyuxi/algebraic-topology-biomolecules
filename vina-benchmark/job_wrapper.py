@@ -3,6 +3,7 @@ import pandas as pd
 import dispatch_jobs
 
 def job(df, idx):
+    # raise Exception
     from vinascpdb import run_on_folder
     folder = df.at[idx, 'folder']
     run_on_folder(folder)
@@ -20,13 +21,17 @@ if __name__ == '__main__':
 
     print(f'csv: {CSV_FILE}')
     print(f'idx: {idx}')
-    df = dispatch_jobs.get_df(CSV_FILE)
 
     try:
+        df = dispatch_jobs.get_df(CSV_FILE)
         job(df, idx)
     except:
+        print('job error')
+        df = dispatch_jobs.get_df(CSV_FILE)
         df.at[idx, 'error'] = True
         df.to_csv(CSV_FILE, index=False)
 
+    df = dispatch_jobs.get_df(CSV_FILE)
+    print('job finished')
     df.at[idx, 'finished'] = True
     df.to_csv(CSV_FILE, index=False)

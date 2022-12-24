@@ -8,7 +8,7 @@ import socket
 
 cwd = pathlib.Path(__file__).parent.resolve()
 CSV_FILE = f'{cwd}/jobs.csv'
-NUM_FOLDERS_TO_RUN = 500
+NUM_FOLDERS_TO_RUN = 1000
 PYTHON_EXECUTABLE = '/work/yl708/bass/cycada/.conda/vina/bin/python'
 SBATCH_TEMPLATE = f"""#!/bin/bash
 #SBATCH --partition=scavenger
@@ -55,6 +55,7 @@ def main():
         sbatch_cmd = SBATCH_TEMPLATE + f'\n{PYTHON_EXECUTABLE} {str(pathlib.Path(__file__).parent) + "/job_wrapper.py"} --csv {CSV_FILE} --idx {idx}'
 
         # print(sbatch_cmd)
+
         with open('run.sh', 'w') as f:
             f.write(sbatch_cmd)
 

@@ -4,62 +4,10 @@ from dispatch_jobs import CSV_FILE
 
 df = pd.read_csv(CSV_FILE)
 
-finished_entries = df.loc[(df['finished'] == True) & (df['error'] == False)]
-
-# %%
-# Collecting RMSD from each successful dock
-
-rmsds = {}
-for i in finished_entries.index:
-    entry_name = finished_entries.at[i, 'name']
-    entry_folder = finished_entries.at[i, 'folder']
-
-    rmsd_file = entry_folder + '/vina_prediction_rmsds.txt'
-    with open(rmsd_file) as f:
-        r = f.read().splitlines()
-
-    r = [float(e) for e in r]
-    rmsds[entry_name] = r
+finished_entries = df.loc[(df['attempted'] == True) & (df['finished'] == True) & (df['error'] == False)]
 
 # %%
 import matplotlib.pyplot as plt
-
-plt.rcParams["figure.figsize"] = (10, 20)
-fig, axs = plt.subplots(3, 1)
-axs = iter(axs.flatten())
-
-# Distribution of RMSD first try
-ax = next(axs)
-print(ax)
-first_try_rmsds = []
-for key in rmsds:
-    first_try_rmsds.append(rmsds[key][0])
-
-first_try_distrib, _, _ = ax.hist(first_try_rmsds, bins=range(30), edgecolor="black")
-ax.set_title(f'Distribution of RMSD first try, n={len(rmsds)}')
-
-# Distribution of min RMSD among first three tries
-ax = next(axs)
-first_three_tries_rmsds = []
-for key in rmsds:
-    first_three_tries_rmsds.append(min(rmsds[key][:3]))
-
-ax.set_title('Distribution of min RMSD in three tries')
-first_three_tries_distrib, _, _ = ax.hist(first_three_tries_rmsds, bins=range(30), edgecolor="black")
-
-# Distribution of min RMSD among all tries
-ax = next(axs)
-all_tries_rmsds = []
-for key in rmsds:
-    all_tries_rmsds.append(min(rmsds[key]))
-
-ax.set_title('Distribution of min RMSD in all tries')
-all_tries_distrib, _, _ = ax.hist(all_tries_rmsds, bins=range(30), edgecolor="black")
-
-plt.savefig('results.jpg')
-
-# %%
-print(f'max number of possible rerankings (all -> first): {sum(all_tries_distrib[:2]) - sum(first_try_distrib[:2])}')
 
 # %%
 from utils import calculate_bbox
@@ -96,13 +44,56 @@ def bbox_contains(ligand_bbox, search_space_bbox):
             out = False
     return out
 
-off_ligands = [l for l in rmsds if min(rmsds[l]) > 3 ]
-print(f'{len(off_ligands)} ligands with best RMSD > 3')
-
-off_ligand_search_space_contain = [bbox_contains(ground_truth_bboxes[l], search_bboxes[l]) for l in off_ligands]
-
 # %%
-print(off_ligand_search_space_contain)
-print(sum(off_ligand_search_space_contain))
+# Collecting RMSD from each successful dock
 
+rmsds = {}
+for i in finished_entries.index:
+    entry_name = finished_entries.at[i, 'name']
+    entry_folder = finished_entries.at[i, 'folder']
+    l = entry_name
+    if not bbox_contains(ground_truth_bboxes[l], search_bboxes[l]):
+        continue
+
+    rmsd_file = entry_folder + '/vina_prediction_rmsds.txt'
+    with open(rmsd_file) as f:
+        r = f.read().splitlines()
+
+    r = [float(e) for e in r]
+    rmsds[entry_name] = r
+
+
+plt.rcParams["figure.figsize"] = (10, 20)
+fig, axs = plt.subplots(3, 1)
+axs = iter(axs.flatten())
+
+# Distribution of RMSD first try
+ax = next(axs)
+print(ax)
+first_try_rmsds = []
+for key in rmsds:
+    first_try_rmsds.append(rmsds[key][0])
+
+first_try_distrib, _, _ = ax.hist(first_try_rmsds, bins=range(30), edgecolor="black")
+ax.set_title(f'Distribution of RMSD first try, n={len(rmsds)}')
+
+# Distribution of min RMSD among first three tries
+ax = next(axs)
+first_three_tries_rmsds = []
+for key in rmsds:
+    first_three_tries_rmsds.append(min(rmsds[key][:3]))
+
+ax.set_title('Distribution of min RMSD in three tries')
+first_three_tries_distrib, _, _ = ax.hist(first_three_tries_rmsds, bins=range(30), edgecolor="black")
+
+# Distribution of min RMSD among all tries
+ax = next(axs)
+all_tries_rmsds = []
+for key in rmsds:
+    all_tries_rmsds.append(min(rmsds[key]))
+
+ax.set_title('Distribution of min RMSD in all tries')
+all_tries_distrib, _, _ = ax.hist(all_tries_rmsds, bins=range(30), edgecolor="black")
+
+plt.savefig('results.jpg')
 

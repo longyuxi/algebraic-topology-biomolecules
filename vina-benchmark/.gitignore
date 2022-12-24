@@ -5,3 +5,4 @@ vina-example-outputs
 vina-playground
 slurm-outs
 jobs.csv
+*.jpg
