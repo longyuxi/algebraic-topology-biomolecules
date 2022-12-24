@@ -3,7 +3,7 @@ import pandas as pd
 import dispatch_jobs
 
 def job(df, idx):
-    # raise Exception
+    # The part where the job actually runs, given df and idx as input
     from vinascpdb import run_on_folder
     folder = df.at[idx, 'folder']
     run_on_folder(folder)

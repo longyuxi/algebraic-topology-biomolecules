@@ -6,9 +6,10 @@ import pandas as pd
 import pathlib
 import socket
 
+# Change these as necessary
 cwd = pathlib.Path(__file__).parent.resolve()
 CSV_FILE = f'{cwd}/jobs.csv'
-NUM_FOLDERS_TO_RUN = 1000
+NUM_JOBS_TO_SUBMIT = 1000
 PYTHON_EXECUTABLE = '/work/yl708/bass/cycada/.conda/vina/bin/python'
 SBATCH_TEMPLATE = f"""#!/bin/bash
 #SBATCH --partition=scavenger
@@ -30,16 +31,18 @@ hostname
 """
 
 def main():
+    # This function shouldn't need to be changed
+
     df = get_df(CSV_FILE)
     # Dispatcher
     import numpy as np
     import random
 
     # randomly sample an entry that has not been attempted until all has been
-    # attempted or reached NUM_FOLDERS_TO_RUN
+    # attempted or reached NUM_JOBS_TO_SUBMIT
     i = 0
     while True:
-        if i == NUM_FOLDERS_TO_RUN:
+        if i == NUM_JOBS_TO_SUBMIT:
             break
         i += 1
 
@@ -55,7 +58,6 @@ def main():
         sbatch_cmd = SBATCH_TEMPLATE + f'\n{PYTHON_EXECUTABLE} {str(pathlib.Path(__file__).parent) + "/job_wrapper.py"} --csv {CSV_FILE} --idx {idx}'
 
         # print(sbatch_cmd)
-
         with open('run.sh', 'w') as f:
             f.write(sbatch_cmd)
 
@@ -65,19 +67,21 @@ def main():
 
 def get_df(csv_file) -> pd.DataFrame:
     if not os.path.exists(csv_file):
-        df = pd.DataFrame(columns=['name', 'folder', 'attempted', 'finished'])
+        df = pd.DataFrame()
 
+        # Keep these three columns - they are needed for the job script
+        df['attempted'] = False
+        df['finished'] = False
+        df['error'] = False
+
+        # Customize all the other columns as fit for the job
         if socket.gethostname() == '1080-ubuntu':
             folders = glob.glob('/home/longyuxi/Documents/mount/scPDB/*')
         else:
             folders = glob.glob('/work/yl708/scPDB/*')
         names = [f.split('/')[-1] for f in folders]
-
         df['name'] = names
         df['folder'] = folders
-        df['attempted'] = False
-        df['finished'] = False
-        df['error'] = False
 
         df.to_csv(csv_file, index=False)
     else:
