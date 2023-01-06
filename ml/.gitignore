@@ -1,1 +1,5 @@
+__pycache__
+.ipynb_checkpoints
 ph_status.csv
+lightning_logs
+plots
