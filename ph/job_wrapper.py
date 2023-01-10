@@ -1,5 +1,6 @@
 import argparse
 import pandas as pd
+import traceback
 import dispatch_jobs
 
 def job(df, idx):
@@ -18,16 +19,18 @@ if __name__ == '__main__':
     CSV_FILE = args.csv
     idx = int(args.idx)
 
-    print(f'csv: {CSV_FILE}')
-    print(f'idx: {idx}')
+    print('csv: ', CSV_FILE)
+    print('idx: ', idx)
 
     try:
         df = dispatch_jobs.get_df(CSV_FILE)
         job(df, idx)
-    except:
+    except Exception as err:
+        print(Exception, err)
+        print(traceback.format_exc())
         print('job error')
         df = dispatch_jobs.get_df(CSV_FILE)
-        df.at[idx, 'error'] = True
+        df.loc[idx, 'error'] = True
         df.to_csv(CSV_FILE, index=False)
 
     df = dispatch_jobs.get_df(CSV_FILE)
