@@ -35,5 +35,5 @@ if __name__ == '__main__':
 
     df = dispatch_jobs.get_df(CSV_FILE)
     print('job finished')
-    df.at[idx, 'finished'] = True
+    df.loc[idx, 'finished'] = True
     df.to_csv(CSV_FILE, index=False)

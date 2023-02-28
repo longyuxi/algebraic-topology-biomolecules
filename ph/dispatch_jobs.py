@@ -11,7 +11,7 @@ import socket
 # Change these as necessary
 cwd = pathlib.Path(__file__).parent.resolve()
 CSV_FILE = f'{cwd}/jobs.csv'
-NUM_JOBS_TO_SUBMIT = 5
+NUM_JOBS_TO_SUBMIT = 5000
 PYTHON_EXECUTABLE = '/work/yl708/algebraic-topology-biomolecules/algtop-environment/bin/python'
 ROOT_DIR = '/work/yl708/algebraic-topology-biomolecules/ph'
 SBATCH_TEMPLATE = f"""#!/bin/bash
@@ -50,7 +50,7 @@ def main():
             break
         i += 1
 
-        valid_entries = df.loc[(df['attempted'] == False) | df['attempted'].isnull()]
+        valid_entries = df.loc[((df['attempted'] == True) | df['attempted'].isnull()) & df['error'] == False]
 
         if len(valid_entries) == 0:
             break
