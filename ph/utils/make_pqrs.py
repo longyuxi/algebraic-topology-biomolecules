@@ -3,8 +3,8 @@
 import glob
 import os
 from tqdm import tqdm
-root = '/work/yl708/pdbbind/refined-set/'
-pdb2pqr_executable = '/work/yl708/algebraic-topology-biomolecules/ph/utils/pdb2pqr-linux-bin64-2.1.0/pdb2pqr'
+root = '/usr/project/dlab/Users/jaden/pdbbind/refined-set/'
+pdb2pqr_executable = '/usr/project/dlab/Users/jaden/pdb2pqr-linux-bin64-2.1.0/pdb2pqr'
 
 pdb_files = glob.glob(root + '*/*.pdb')
 cmds = ''

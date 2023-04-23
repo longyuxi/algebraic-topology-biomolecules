@@ -6,7 +6,7 @@ import sys
 
 def Interaction_Rips(cut, protein_name, working_dir):
 
-    print "Computing 0-dimensional persistent homology with interaction distance."
+    print("Computing 0-dimensional persistent homology with interaction distance.")
 
     com = np.load(working_dir+'/'+protein_name+'_'+str(cut)+'.struct')
     PRO = com['PRO']; LIG = com['LIG'];
@@ -39,7 +39,7 @@ def Interaction_Rips(cut, protein_name, working_dir):
 
 def Electrostatics_Rips(cut, protein_name, working_dir):
 
-    print "Computing 0-dimensional persistent homology with electrostatics interaction induced distance."
+    print("Computing 0-dimensional persistent homology with electrostatics interaction induced distance.")
 
     LIGELE = ['C','N','O','S','P','F','Cl','Br','I','H']
     PROELE = ['C','N','O','S','H']
@@ -61,7 +61,7 @@ def Electrostatics_Rips(cut, protein_name, working_dir):
 
 def Alpha(cut, protein_name, working_dir):
 
-    print "Computing alpha complex based persistent homology for protein-ligand complex."
+    print("Computing alpha complex based persistent homology for protein-ligand complex.")
 
     dt = np.dtype([('dim', int), ('birth', float), ('death', float)])
     ProEleCollection = [['C'],['N'],['O'],['S'],['C','N'],['C','O'],['N','O'],['C','N','O'],['C','N','O','S']]

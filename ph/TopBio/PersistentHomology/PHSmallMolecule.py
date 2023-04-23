@@ -44,8 +44,8 @@ def Level1_Rips(s, ligand_name, working_dir):
             BondOutFile.close()
     line = 'matlab -nodisplay -nodesktop -nosplash -r "DataDir=' + "'"+working_dir+"';pdb="+"'"+ligand_name+"'"+';PH_small_molecule_level1"'
 
-    print 'this is the line that is thrown into os.system:'
-    print line
+    print('this is the line that is thrown into os.system:')
+    print(line)
 
     os.system(line)
 

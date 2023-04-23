@@ -19,7 +19,7 @@ import TopBio.PersistentHomology.PHComplex as PHComplex
 import TopBio.Feature.LigandFeature as LigandFeature
 import TopBio.Feature.ComplexFeature as ComplexFeature
 
-working_dir = '/work/yl708/pdbbind/refined-set/4k7i/'
+working_dir = '/usr/project/dlab/Users/jaden/pdbbind/refined-set/4k7i/'
 ligand_name = '4k7i_ligand'
 protein_name = '4k7i_protein'
 
