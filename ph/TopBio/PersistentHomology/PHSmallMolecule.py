@@ -94,6 +94,6 @@ def Alpha(s, ligand_name, working_dir):
         tmpinfile.close()
         BarCollection['lig_'+e] = Bars
 
-    OutFile = open(working_dir+'/'+ligand_name+'_alpha.pkl', 'w')
+    OutFile = open(working_dir+'/'+ligand_name+'_alpha.pkl', 'wb')
     pickle.dump(BarCollection, OutFile, protocol=pickle.HIGHEST_PROTOCOL)
     OutFile.close()

@@ -40,6 +40,6 @@ def get_pqr_structure(ligand_name, protein_name, working_dir, cut=16.0):
                 chg = float(line[54:62])
                 PRO.append([typ,x,y,z,chg])
     PRO = np.asarray(PRO); LIG = np.asarray(LIG);
-    OutFile = open(working_dir+'/'+protein_name+'_'+str(cut)+'_chg.npz', 'w')
+    OutFile = open(working_dir+'/'+protein_name+'_'+str(cut)+'_chg.npz', 'wb')
     np.savez(OutFile, PRO=PRO, LIG=LIG)
     OutFile.close()

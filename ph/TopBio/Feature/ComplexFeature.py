@@ -42,7 +42,7 @@ def GenerateFeature_interaction_ML(protein_name, working_dir,typ):
                 fid = i*len(LigEleList)*(len(Bins)-1) + j*(len(Bins)-1) + k
                 FeatureFlat[fid] = Feature[i,j,k]
 
-    OutFile = open(working_dir+'/'+protein_name+'_feature_complex_interaction_ML.npy', 'w')
+    OutFile = open(working_dir+'/'+protein_name+'_feature_complex_interaction_ML.npy', 'wb')
     np.save(OutFile, FeatureFlat)
     OutFile.close()
 
@@ -85,7 +85,7 @@ def GenerateFeature_interaction_1DCNN(protein_name, working_dir):
             for k in range(len(Bins)-1):
                 FeatureFlat[k,fid] = Feature[i,j,k]
 
-    OutFile = open(working_dir+'/'+protein_name+'_feature_complex_interaction_1DCNN.npy', 'w')
+    OutFile = open(working_dir+'/'+protein_name+'_feature_complex_interaction_1DCNN.npy', 'wb')
     np.save(OutFile, FeatureFlat)
     OutFile.close()
 
@@ -131,7 +131,7 @@ def GenerateFeature_electrostatics_ML(protein_name, working_dir):
                 Feature_i.extend([0.]*6)
     Fearture_i = np.asarray(Feature_i, float)
 
-    OutFile = open(working_dir+'/'+protein_name+'_feature_complex_electrostatics_ML.npy', 'w')
+    OutFile = open(working_dir+'/'+protein_name+'_feature_complex_electrostatics_ML.npy', 'wb')
     np.save(OutFile, Feature_i)
 
 def GenerateFeature_electrostatics_1DCNN(protein_name, working_dir):
@@ -174,7 +174,7 @@ def GenerateFeature_electrostatics_1DCNN(protein_name, working_dir):
             for k in range(len(Bins)-1):
                 FeatureFlat[k,fid] = Feature[i,j,k]
 
-    OutFile = open(working_dir+'/'+protein_name+'_feature_complex_electrostatics_1DCNN.npy', 'w')
+    OutFile = open(working_dir+'/'+protein_name+'_feature_complex_electrostatics_1DCNN.npy', 'wb')
     np.save(OutFile, FeatureFlat)
     OutFile.close()
 
@@ -191,7 +191,7 @@ def GenerateFeature_alpha_ML(protein_name, working_dir, typ):
     small = 0.01
 
     Feature_i = []
-    InFile = open(working_dir+'/'+protein_name+'_alpha.pkl')
+    InFile = open(working_dir+'/'+protein_name+'_alpha.pkl', 'rb')
     BarCollection = pickle.load(InFile)
     for ep in ProEleName:
         if 'pro_'+ep in BarCollection.keys():
@@ -355,7 +355,7 @@ def GenerateFeature_alpha_ML(protein_name, working_dir, typ):
             Feature_i.extend([0.]*(126))
 
     Feature_i = np.asarray(Feature_i, float)
-    OutFile = open(working_dir+'/'+protein_name+'_feature_complex_alpha_'+typ+'_ML.npy', 'w')
+    OutFile = open(working_dir+'/'+protein_name+'_feature_complex_alpha_'+typ+'_ML.npy', 'wb')
     np.save(OutFile, Feature_i)
     OutFile.close()
 
@@ -371,7 +371,7 @@ def GenerateFeature_alpha_1DCNN(protein_name, working_dir):
     Feature_c_p = np.zeros([lth,8], float)
     Feature_h_pl = np.zeros([lth,8], float)
     Feature_c_pl = np.zeros([lth,8], float)
-    InFile = open(working_dir+'/'+protein_name+'_alpha.pkl')
+    InFile = open(working_dir+'/'+protein_name+'_alpha.pkl', 'rb')
     BarCollection = pickle.load(InFile)
 
 
@@ -526,7 +526,7 @@ def GenerateFeature_alpha_1DCNN(protein_name, working_dir):
                 Feature_c_pl[bid:did+1, 7] += 1.
 
     Feature = np.concatenate((Feature_c_pl, Feature_c_pl[:,:]-Feature_c_p[:,:], Feature_h_pl, Feature_h_pl[:,:]-Feature_h_p[:,:]), axis=1)
-    outfile = open(working_dir+'/'+protein_name+'_feature_complex_alpha_1DCNN.npy', 'w')
+    outfile = open(working_dir+'/'+protein_name+'_feature_complex_alpha_1DCNN.npy', 'wb')
     np.save(outfile, Feature)
 
 def GenerateFeature_alpha_2DCNN(protein_name, working_dir):
@@ -538,10 +538,10 @@ def GenerateFeature_alpha_2DCNN(protein_name, working_dir):
     OrderedName = np.load('PerformanceOrderAlphaHand.npy')
     X = np.zeros([16, lth, 128], float)
 
-    InFile = open(working_dir+'/'+protein_name+'_alpha.pkl')
+    InFile = open(working_dir+'/'+protein_name+'_alpha.pkl', 'rb')
     BarCollection = pickle.load(InFile)
     for j in range(len(OrderedName)):
-        plname = OrderedName[j]; pname, lname = plname.split('_');
+        plname = str(OrderedName[j]); pname, lname = plname.split('_');
         f_p_i_j = np.zeros([8,lth], float)
         f_pl_i_j = np.zeros([8,lth], float)
         if 'pro_'+pname in BarCollection.keys():
@@ -583,6 +583,6 @@ def GenerateFeature_alpha_2DCNN(protein_name, working_dir):
         f_df_i_j = f_pl_i_j[:,:] - f_p_i_j[:,:]
         X[0:8,:,j] = f_pl_i_j[:,:]; X[8:16,:,j] = f_df_i_j[:,:]
 
-    OutFile = open(working_dir+'/'+protein_name+'_feature_complex_alpha_2DCNN.npy', 'w')
+    OutFile = open(working_dir+'/'+protein_name+'_feature_complex_alpha_2DCNN.npy', 'wb')
     np.save(OutFile, X)
     OutFile.close()

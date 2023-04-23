@@ -9,7 +9,7 @@ def GenerateFeature_alpha(ligand_name, working_dir):
 
     Feature_i = []
     pdb = ligand_name
-    InFile = open(working_dir+'/'+ligand_name+'_alpha.pkl')
+    InFile = open(working_dir+'/'+ligand_name+'_alpha.pkl', 'rb')
     BarCollection = pickle.load(InFile)
     for el in LIGELE:
         if 'lig_'+el in BarCollection.keys():
@@ -93,7 +93,7 @@ def GenerateFeature_alpha(ligand_name, working_dir):
             Feature_i.extend([0.]*42)
     Feature_i = np.asarray(Feature_i, float)
 
-    outfile = open(working_dir+'/'+ligand_name+'_feature_alpha_handcrafted.npy', 'w')
+    outfile = open(working_dir+'/'+ligand_name+'_feature_alpha_handcrafted.npy', 'wb')
     np.save(outfile, Feature_i)
     outfile.close()
 
@@ -194,6 +194,6 @@ def GenerateFeature_level1(ligand_name, working_dir):
             Feature_i.extend([0.]*42)
     Feature_i = np.asarray(Feature_i, float)
 
-    outfile = open(working_dir+'/'+ligand_name+'_feature_ligand_level1_handcrafted.npy', 'w')
+    outfile = open(working_dir+'/'+ligand_name+'_feature_ligand_level1_handcrafted.npy', 'wb')
     np.save(outfile, Feature_i)
     outfile.close()

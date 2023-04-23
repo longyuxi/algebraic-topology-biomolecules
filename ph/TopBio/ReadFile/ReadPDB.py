@@ -48,6 +48,6 @@ def get_pdb_structure(s, cut, protein_name, working_dir):
     print('Number of atoms in ligand/protein with cutoff ', str(cut))
     print(len(LIG), '/', len(PRO))
     outname = protein_name+'_'+str(cut)+'.struct';
-    outfile = open(working_dir+'/'+outname, 'w')
+    outfile = open(working_dir+'/'+outname, 'wb')
     np.savez(outfile,PRO=PRO,LIG=LIG)
     outfile.close()

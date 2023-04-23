@@ -14,10 +14,10 @@ def Interaction_Rips(cut, protein_name, working_dir):
         for e2 in [['C'],['N'],['O'],['S'],['P'],['F'],['Cl'],['Br'],['I']]:
             PROpts = []; LIGpts = [];
             for i in range(len(PRO)):
-                if PRO[i][0].replace(" ","") in e1:
+                if str(PRO[i][0]).replace(" ","") in e1:
                     PROpts.append(PRO[i][1])
             for i in range(len(LIG)):
-                if LIG[i][0].replace(" ","") in e2:
+                if str(LIG[i][0]).replace(" ","") in e2:
                     LIGpts.append(LIG[i][1])
             if len(PROpts) > 0 and len(LIGpts) > 0:
                 namee1 = ''
@@ -78,11 +78,11 @@ def Alpha(cut, protein_name, working_dir):
         for el in LigEleCollection:
             propts = []
             for a in range(len(PRO)):
-                if PRO[a][0].replace(" ","") in ep:
+                if str(PRO[a][0]).replace(" ","") in ep:
                     propts.append([ PRO[a][1][0], PRO[a][1][1], PRO[a][1][2] ])
             ligpts = []
             for a in range(len(LIG)):
-                if LIG[a][0].replace(" ","") in el:
+                if str(LIG[a][0]).replace(" ","") in el:
                     ligpts.append([ LIG[a][1][0], LIG[a][1][1], LIG[a][1][2] ])
             if len(propts) + len(ligpts) > 3:
                 pname = ''
@@ -114,7 +114,7 @@ def Alpha(cut, protein_name, working_dir):
     for ep in ProEleCollection:
         propts = []
         for a in range(len(PRO)):
-            if PRO[a][0].replace(" ","") in ep:
+            if str(PRO[a][0]).replace(" ","") in ep:
                 propts.append([ PRO[a][1][0], PRO[a][1][1], PRO[a][1][2] ])
         if len(propts) > 3:
             pname = ''
@@ -138,6 +138,6 @@ def Alpha(cut, protein_name, working_dir):
                         Bars.append([int(b), float(c), float(d)])
             BarCollection[name] = Bars
 
-    OutFile = open(working_dir+'/'+protein_name+'_alpha.pkl', 'w')
+    OutFile = open(working_dir+'/'+protein_name+'_alpha.pkl', 'wb')
     pickle.dump(BarCollection, OutFile, protocol=pickle.HIGHEST_PROTOCOL)
     OutFile.close()
