@@ -25,7 +25,7 @@ def get_df(csv_file) -> pd.DataFrame:
 
         # # Customize all the other columns as fit for the job
         # if socket.gethostname() == '1080-ubuntu':
-        #     folders = glob.glob('/home/longyuxi/Documents/mount/pdbbind-dataset/refined-set/*')
+        #     folders = glob.glob('/home/longyuxi/Documents/mount/pdbbind-algtop-ph/refined-set/*')
         # else:
         #     folders = glob.glob('/work/yl708/pdbbind/refined-set/*')
         # names = [f.split('/')[-1] for f in folders]
@@ -34,12 +34,12 @@ def get_df(csv_file) -> pd.DataFrame:
 
 
         if socket.gethostname() == '1080-ubuntu':
-            folder_base = '/home/longyuxi/Documents/mount/pdbbind-dataset/refined-set/'
+            folder_base = '/home/longyuxi/Documents/mount/pdbbind-algtop-ph/refined-set/'
         else:
             folder_base = '/work/yl708/pdbbind/refined-set/'
 
         if socket.gethostname() == '1080-ubuntu':
-            index_location = '/home/longyuxi/Documents/mount/pdbbind-dataset/index/INDEX_refined_data.2020'
+            index_location = '/home/longyuxi/Documents/mount/pdbbind-algtop-ph/index/INDEX_refined_data.2020'
         else:
             index_location = '/work/yl708/pdbbind/index/INDEX_refined_data.2020'
         pdbbind_df = load_pdbbind_data_index(index_location)
@@ -63,7 +63,7 @@ def get_df(csv_file) -> pd.DataFrame:
 
 def main():
     if socket.gethostname() == '1080-ubuntu':
-        index_location = '/home/longyuxi/Documents/mount/pdbbind-dataset/index/INDEX_refined_data.2020'
+        index_location = '/home/longyuxi/Documents/mount/pdbbind-algtop-ph/index/INDEX_refined_data.2020'
     else:
         index_location =  '/work/yl708/pdbbind/index/INDEX_refined_data.2020'
     pdbbind_df = load_pdbbind_data_index(index_location)
@@ -84,7 +84,7 @@ def main():
             df.at[i, 'attempted'] = True
             df.at[i, 'finished'] = True
             df.at[i, 'error'] = False
-        elif numfiles == 4:
+        elif numfiles == 6:
             df.at[i, 'attempted'] = False
             df.at[i, 'finished'] = False
             df.at[i, 'error'] = False

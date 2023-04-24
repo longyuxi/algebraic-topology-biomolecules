@@ -1,6 +1,7 @@
 # Dataloader
 from pathlib import Path
 import pickle
+import glob
 
 import pandas as pd
 import numpy as np
@@ -11,6 +12,33 @@ from torch.utils.data import Dataset, DataLoader, random_split
 import ph_status_check
 import matplotlib.pyplot as plt
 import seaborn as sns
+import random
+from tqdm import tqdm
+
+pl.seed_everything(123)
+
+# Split dataset
+PH_STATUS_CSV_FILE = 'ph_status.csv'
+ph_status_df = ph_status_check.get_df(PH_STATUS_CSV_FILE)
+train_df = pd.DataFrame()
+test_df = pd.DataFrame()
+TRAIN_TEST_SPLIT = 0.8  # Proportion of data points to be used as training data
+
+def split_df():
+    # Splits ph_status_df into train_df and test_df
+    # Updates the corresponding global variables
+    all_idxs = list(range(len(ph_status_df)))
+    shuffled_idxs = random.sample(all_idxs, len(all_idxs))
+    num_train = int(TRAIN_TEST_SPLIT*len(all_idxs))
+
+    train_idxs = shuffled_idxs[:num_train]
+    test_idxs = shuffled_idxs[num_train:]
+
+    global train_df, test_df
+    train_df = ph_status_df.iloc[train_idxs, :]
+    test_df = ph_status_df.iloc[test_idxs, :]
+
+split_df()
 
 class TopBP_DL_Dataset(Dataset):
     def __init__(self,
@@ -29,6 +57,7 @@ class TopBP_DL_Dataset(Dataset):
 
         alpha_2dcnn_file = f'{item_base_folder}/{id}_protein_feature_complex_alpha_2DCNN.npy'
         alpha_2dcnn_data = torch.tensor(np.load(alpha_2dcnn_file), dtype=torch.float)
+        alpha_2dcnn_data = torch.swapaxes(alpha_2dcnn_data, -2, -3) # 16, 120, 128 -> 120, 16, 128
 
         distance_1dcnn_file = f'{item_base_folder}/{id}_protein_feature_complex_interaction_1DCNN.npy'
         distance_1dcnn_data = torch.tensor(np.load(distance_1dcnn_file), dtype=torch.float)
@@ -56,12 +85,11 @@ class TopBP_DL_DataModule(pl.LightningDataModule):
 
     def setup(self, stage: str):
         # Assign train/val datasets for use in dataloaders
-        train_size = int(0.6 * len(self.dataset))
+        train_size = int(0.8 * len(self.dataset))
         val_size = int(0.2 * len(self.dataset))
-        test_size = int(0.1 * len(self.dataset))
-        predict_size = len(self.dataset) - train_size - val_size - test_size
+        print(f'train size: {train_size}, val size: {val_size}')
 
-        self.train_set, self.val_set, self.test_set, self.predict_set = random_split(self.dataset, [train_size, val_size, test_size, predict_size])
+        self.train_set, self.val_set = random_split(self.dataset, [train_size, val_size])
 
     def train_dataloader(self):
         return DataLoader(self.train_set, batch_size=self.batch_size, num_workers=self.num_workers)
@@ -69,46 +97,48 @@ class TopBP_DL_DataModule(pl.LightningDataModule):
     def val_dataloader(self):
         return DataLoader(self.val_set, batch_size=self.batch_size, num_workers=self.num_workers)
 
-    def test_dataloader(self):
-        return DataLoader(self.test_set, batch_size=self.batch_size, num_workers=self.num_workers)
-
-    def predict_dataloader(self):
-        return DataLoader(self.predict_set, batch_size=self.batch_size, num_workers=self.num_workers)
-
 class TopBP_DL_Model(nn.Module):
     def __init__(self) -> None:
         super(TopBP_DL_Model, self).__init__()
 
         self.alpha_2dcnn_head = nn.Sequential(
-            nn.Conv2d(16, 64, 3), nn.ReLU(), nn.Conv2d(64, 64, 3), nn.ReLU(),
+            nn.Conv2d(120, 64, 3, padding='same'), nn.ReLU(), nn.Conv2d(64, 64, 3, padding='valid'), nn.ReLU(),
             nn.AvgPool2d(2), nn.Dropout(0.25),
-            nn.Conv2d(64, 128, 3), nn.ReLU(), nn.Conv2d(128, 128, 3), nn.ReLU(),
+            nn.Conv2d(64, 128, 3, padding='same'), nn.ReLU(), nn.Conv2d(128, 128, 3, padding='valid'), nn.ReLU(),
             nn.AvgPool2d(2), nn.Dropout(0.25),
             nn.Flatten()
         )
 
         self.distance_1dcnn_head = nn.Sequential(
-            nn.Conv1d(36, 128, 3), nn.ReLU(), nn.Conv1d(128, 128, 3), nn.ReLU(),
+            nn.Conv1d(36, 128, 3, padding='same'), nn.ReLU(), nn.Conv1d(128, 128, 3, padding='valid'), nn.ReLU(),
             nn.AvgPool1d(2), nn.Dropout(0.25),
-            nn.Conv1d(128, 256, 3), nn.ReLU(), nn.Conv1d(256, 256, 3), nn.ReLU(),
+            nn.Conv1d(128, 256, 3, padding='same'), nn.ReLU(), nn.Conv1d(256, 256, 3, padding='valid'), nn.ReLU(),
             nn.AvgPool1d(2), nn.Dropout(0.25),
             nn.Flatten()
         )
 
         self.charge_1dcnn_head = nn.Sequential(
-            nn.Conv1d(50, 128, 3), nn.ReLU(), nn.Conv1d(128, 128, 3), nn.ReLU(),
+            nn.Conv1d(50, 128, 3, padding='same'), nn.ReLU(), nn.Conv1d(128, 128, 3, padding='valid'), nn.ReLU(),
             nn.AvgPool1d(2), nn.Dropout(0.25),
-            nn.Conv1d(128, 256, 3), nn.ReLU(), nn.Conv1d(256, 256, 3), nn.ReLU(),
+            nn.Conv1d(128, 256, 3, padding='same'), nn.ReLU(), nn.Conv1d(256, 256, 3, padding='valid'), nn.ReLU(),
             nn.AvgPool1d(2), nn.Dropout(0.25),
             nn.Flatten()
         )
 
         self.finale = nn.Sequential(
-            nn.Linear(117888, 4096), nn.Tanh(), nn.Linear(4096, 4096), nn.Tanh(),
+            nn.Linear(25856, 4096), nn.Tanh(), nn.Linear(4096, 4096), nn.Tanh(),
             nn.Linear(4096, 4096), nn.ReLU(), nn.Linear(4096, 4096), nn.ReLU(),
             nn.Dropout(0.5), nn.Linear(4096, 1)
         )
 
+        self.glorot_init()
+
+
+    def glorot_init(self):
+        def init_weights(m):
+            if isinstance(m, nn.Linear):
+                torch.nn.init.xavier_uniform_(m.weight)
+        self.apply(init_weights)
 
 
     def forward(self, alpha_2dcnn_data, distance_1dcnn_data, charge_1dcnn_data):
@@ -122,6 +152,7 @@ class TopBP_DL_Model(nn.Module):
         chargehead_output = self.charge_1dcnn_head(charge_1dcnn_data)
 
         # print([o.shape for o in [alphahead_output, distancehead_output, chargehead_output]])
+        # raise Exception
         y = torch.concat([alphahead_output, distancehead_output, chargehead_output], dim=1)
         # print(y.shape)
         y = self.finale(y)
@@ -204,7 +235,7 @@ class TopBP_DL_Module(pl.LightningModule):
         return loss
 
     def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=0.002)
+        return torch.optim.Adam(self.parameters(), lr=0.0001)
 
     def validation_step(self, batch, batch_idx):
         alpha_2dcnn_data, distance_1dcnn_data, charge_1dcnn_data, y = batch
@@ -213,32 +244,35 @@ class TopBP_DL_Module(pl.LightningModule):
         self.log("val_loss", loss)
 
 # %%
+def debug():
+    ds = TopBP_DL_Dataset(ph_status_df)
+    module = TopBP_DL_Module()
+    alpha_2dcnn_data, distance_1dcnn_data, charge_1dcnn_data, y = ds[0]
+    y_hat = module(alpha_2dcnn_data[None, :, :], distance_1dcnn_data[None, :, :], charge_1dcnn_data[None, :, :])[0][0].detach().cpu().numpy()
+
 def train():
     m = TopBP_DL_Module()
-    PH_STATUS_CSV_FILE = 'ph_status.csv'
-    ph_status_df = ph_status_check.get_df(PH_STATUS_CSV_FILE)
-    datamodule = TopBP_DL_DataModule(ph_status_df, batch_size=2)
-    trainer = pl.Trainer(max_epochs=10, resume_from_checkpoint='lightning_logs/version_1/checkpoints/epoch=4-step=795.ckpt')
+    datamodule = TopBP_DL_DataModule(train_df, batch_size=16)
+    trainer = pl.Trainer(max_epochs=1000, accelerator='gpu', log_every_n_steps=800)
     trainer.fit(m, datamodule=datamodule)
 
 def predict():
-    PH_STATUS_CSV_FILE = 'ph_status.csv'
-    ph_status_df = ph_status_check.get_df(PH_STATUS_CSV_FILE)
-    ds = TopBP_DL_Dataset(ph_status_df)
+    ds = TopBP_DL_Dataset(test_df)
     module = TopBP_DL_Module()
-    module = module.load_from_checkpoint('lightning_logs/version_2/checkpoints/epoch=9-step=1590.ckpt')
+    model_path = glob.glob('lightning_logs/version_0/checkpoints/*')[0]
+    module = module.load_from_checkpoint(model_path)
 
 
     predicted = []
     actual = []
-    for i in range(100):
-    # for i in range(len(ds)):
+    print(f'Predicting using model {model_path}')
+    for i in tqdm(range(len(ds))):
         alpha_2dcnn_data, distance_1dcnn_data, charge_1dcnn_data, y = ds[i]
         y_hat = module(alpha_2dcnn_data[None, :, :], distance_1dcnn_data[None, :, :], charge_1dcnn_data[None, :, :])[0][0].detach().cpu().numpy()
         predicted.append(y_hat)
 
         actual.append(y[0].detach().cpu().numpy())
-        print(y_hat, y[0].detach().cpu().numpy())
+        # print(y_hat, y[0].detach().cpu().numpy())
 
 
     predicted = np.array(predicted)
@@ -255,12 +289,14 @@ def predict():
     fig = plt.figure()
     sns.scatterplot(data=df, x='Actual -logKd/Ki', y='Predicted -logKd/Ki')
     ax = fig.gca()
-    ax.set_title(f'MSE: {mse}')
+    ax.set_title(f'MSE: {round(mse, 3)}')
     imfile = save_base_folder / 'predictions.jpg'
     plt.savefig(imfile)
 
 if __name__ == '__main__':
     # train()
     predict()
+    # debug()
+    pass
 
 
