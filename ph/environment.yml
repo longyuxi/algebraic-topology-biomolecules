@@ -1,4 +1,5 @@
-name: algtop
+# Just for persistent homology
+name: algtop-ph
 channels:
   - conda-forge
   - bioconda
@@ -8,4 +9,6 @@ dependencies:
   - pip
   - python
   - scipy
+  - pandas
+  - redis-py
   - setuptools

@@ -2,38 +2,40 @@ import argparse
 import pandas as pd
 import traceback
 import dispatch_jobs
+import redis
 
-def job(df, idx):
+DB = dispatch_jobs.get_db()
+
+def job(key):
     # The part where the job actually runs, given df and idx as input
     from homology import calculate
-    calculate(df.at[idx, 'folder'], df.at[idx, 'name'] + '_ligand', df.at[idx, 'name'] + '_protein')
+    d = DB.hgetall(key)
+    calculate(d['folder'], d['name'] + '_ligand', d['name'] + '_protein')
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--csv')
-    parser.add_argument('--idx')
+    parser.add_argument('--key')
 
     args = parser.parse_args()
+    key = args.key
 
-    CSV_FILE = args.csv
-    idx = int(args.idx)
-
-    print('csv: ', CSV_FILE)
-    print('idx: ', idx)
+    print('key', key)
 
     try:
-        df = dispatch_jobs.get_df(CSV_FILE)
-        job(df, idx)
+        job(key)
+        print('job finished')
+        d = DB.hgetall(key)
+        d['finished'] = 'True'
+        d['error'] = 'False'
+        DB.hset(key, mapping=d)
+
     except Exception as err:
         print(Exception, err)
         print(traceback.format_exc())
         print('job error')
-        df = dispatch_jobs.get_df(CSV_FILE)
-        df.loc[idx, 'error'] = True
-        df.to_csv(CSV_FILE, index=False)
 
-    df = dispatch_jobs.get_df(CSV_FILE)
-    print('job finished')
-    df.loc[idx, 'finished'] = True
-    df.to_csv(CSV_FILE, index=False)
+        d = DB.hgetall(key)
+        d['finished'] = 'True'
+        d['error'] = 'True'
+        DB.hset(key, mapping=d)
