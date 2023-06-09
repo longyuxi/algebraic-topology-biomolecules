@@ -1,4 +1,3 @@
-# Dataloader
 from pathlib import Path
 import pickle
 import glob
@@ -9,11 +8,13 @@ import pytorch_lightning as pl
 import torch
 from torch import nn
 from torch.utils.data import Dataset, DataLoader, random_split
-import ph_status_check
 import matplotlib.pyplot as plt
 import seaborn as sns
 import random
 from tqdm import tqdm
+import plotly.express as px
+
+import ph_status_check
 
 pl.seed_everything(123)
 
@@ -160,60 +161,6 @@ class TopBP_DL_Model(nn.Module):
         return y
 
 
-class TNet_BP_Model(nn.Module):
-    def __init__(self) -> None:
-        super(TNet_BP_Model, self).__init__()
-
-        self.alpha_2dcnn_head = nn.Sequential(
-            nn.Conv2d(16, 64, 3), nn.ReLU(), nn.Conv2d(64, 64, 3), nn.ReLU(),
-            nn.AvgPool2d(2), nn.Dropout(0.25),
-            nn.Conv2d(64, 128, 3), nn.ReLU(), nn.Conv2d(128, 128, 3), nn.ReLU(),
-            nn.AvgPool2d(2), nn.Dropout(0.25),
-            nn.Flatten()
-        )
-
-        self.distance_1dcnn_head = nn.Sequential(
-            nn.Conv1d(36, 128, 3), nn.ReLU(), nn.Conv1d(128, 128, 3), nn.ReLU(),
-            nn.AvgPool1d(2), nn.Dropout(0.25),
-            nn.Conv1d(128, 256, 3), nn.ReLU(), nn.Conv1d(256, 256, 3), nn.ReLU(),
-            nn.AvgPool1d(2), nn.Dropout(0.25),
-            nn.Flatten()
-        )
-
-        self.charge_1dcnn_head = nn.Sequential(
-            nn.Conv1d(50, 128, 3), nn.ReLU(), nn.Conv1d(128, 128, 3), nn.ReLU(),
-            nn.AvgPool1d(2), nn.Dropout(0.25),
-            nn.Conv1d(128, 256, 3), nn.ReLU(), nn.Conv1d(256, 256, 3), nn.ReLU(),
-            nn.AvgPool1d(2), nn.Dropout(0.25),
-            nn.Flatten()
-        )
-
-        self.finale = nn.Sequential(
-            nn.Linear(117888, 4096), nn.Tanh(), nn.Linear(4096, 4096), nn.Tanh(),
-            nn.Linear(4096, 4096), nn.ReLU(), nn.Linear(4096, 4096), nn.ReLU(),
-            nn.Dropout(0.5), nn.Linear(4096, 1)
-        )
-
-
-
-    def forward(self, alpha_2dcnn_data, distance_1dcnn_data, charge_1dcnn_data):
-        # Input sizes:
-        # torch.Size([16, 120, 128])
-        # torch.Size([36, 200])
-        # torch.Size([50, 100])
-
-        alphahead_output = self.alpha_2dcnn_head(alpha_2dcnn_data)
-        distancehead_output = self.distance_1dcnn_head(distance_1dcnn_data)
-        chargehead_output = self.charge_1dcnn_head(charge_1dcnn_data)
-
-        # print([o.shape for o in [alphahead_output, distancehead_output, chargehead_output]])
-        y = torch.concat([alphahead_output, distancehead_output, chargehead_output], dim=1)
-        # print(y.shape)
-        y = self.finale(y)
-
-        return y
-
-
 class TopBP_DL_Module(pl.LightningModule):
     def __init__(self):
         super().__init__()
@@ -286,12 +233,8 @@ def predict():
 
     mse = np.sum((np.array(predicted) - np.array(actual))**2) / len(predicted)
 
-    fig = plt.figure()
-    sns.scatterplot(data=df, x='Actual -logKd/Ki', y='Predicted -logKd/Ki')
-    ax = fig.gca()
-    ax.set_title(f'MSE: {round(mse, 3)}')
-    imfile = save_base_folder / 'predictions.jpg'
-    plt.savefig(imfile)
+    fig = px.scatter(df, x='Actual -logKd/Ki', y='Predicted -logKd/Ki', title=f'n: {len(predicted)}, MSE: {mse:.2f}, Pearson: {np.corrcoef(predicted, actual)[0, 1]:.2f}')
+    fig.write_html(str(save_base_folder / 'predictions.html'))
 
 if __name__ == '__main__':
     # train()
